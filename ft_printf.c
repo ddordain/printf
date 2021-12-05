@@ -1,64 +1,63 @@
-#include "libftprintf.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_printf.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ddordain <ddordain@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/12/02 12:09:18 by ddordain          #+#    #+#             */
+/*   Updated: 2021/12/03 18:40:05 by ddordain         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-#include "libftprintf.h"
+#include "ft_printf.h"
 
-void    ft_putstr(char *str)
+static int	get_specification(va_list argptr, char c)
 {
-    int i;
+	int	counter;
 
-    i = 0;
-    while (str[i])
-    {
-        write(1, &str[i], 1);
-        i++;
-    }
+	counter = 0;
+	if (c == 'c')
+		counter += ft_printchar(va_arg(argptr, int));
+	if (c == 's')
+		counter += ft_printstr(va_arg(argptr, char *));
+	if (c == 'd' || c == 'i')
+		counter += ft_printint(va_arg(argptr, int));
+	if (c == 'u')
+		counter += ft_printuint(va_arg(argptr, unsigned int));
+	if (c == 'x')
+		counter += ft_printhex(va_arg(argptr, unsigned int));
+	if (c == 'X')
+		counter += ft_printhexup(va_arg(argptr, unsigned int));
+	if (c == 'p')
+		counter += ft_printp((unsigned long)va_arg(argptr, void *));
+	if (c == '%')
+		counter += ft_printchar('%');
+	return (counter);
 }
 
-void    ft_putchar(int c)
+int	ft_printf(const char *format, ...)
 {
-    char c_char;
+	va_list	argptr;
+	size_t	i;
+	int		counter;
 
-    c_char = (char)c;
-    write(1, &c_char, 1);
-}
-
-static void get_specification(va_list argptr, char c)
-{
-    if (c == 'c')
-        ft_putchar(va_arg(argptr, int));
-    if (c == 's')
-        ft_putstr(va_arg(argptr, char *));
-}
-
-int ft_printf(const char *format, ...)
-{
-    va_list argptr;
-    int     i;
-
-    i = 0;
-    va_start(argptr, format);
-    while (format[i] != '\0')
-    {
-        if (format[i] != '%')
-            ft_putchar(format[i]);
-        else
-        {
-            i++;
-            get_specification(argptr, format[i]);
-        }
-        i++;
-    }
-    va_end(argptr);
-    return (i);
-}
-
-int main(void)
-{
-    char c1, c2;
-    char *str = "TAIIIIISEZ VOUS";
-
-    c1 = 'A';
-    c2 = 'B';
-
-    ft_printf("salut %c & %c, %s\n", c1, c2, str);
+	va_start(argptr, format);
+	i = 0;
+	counter = 0;
+	while (format[i] != '\0')
+	{
+		if (format[i] != '%')
+		{
+			counter += ft_printchar(format[i]);
+		}
+		else
+		{
+			i++;
+			counter += get_specification(argptr, format[i]);
+		}
+		i++;
+	}
+	va_end(argptr);
+	return (counter);
 }
